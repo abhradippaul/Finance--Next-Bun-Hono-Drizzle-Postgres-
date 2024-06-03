@@ -36,11 +36,12 @@ function NavigationMobile({ routes, pathname }: Props) {
         <nav className="flex flex-col gap-y-2 pt-6">
           {routes.map(({ href, label }) => (
             <Button
+              className="w-full justify-start"
               key={href}
               variant={href === pathname ? "secondary" : "ghost"}
               onClick={() => onClick(href)}
             >
-              {label}{" "}
+              {label}
             </Button>
           ))}
         </nav>
