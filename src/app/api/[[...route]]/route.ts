@@ -4,9 +4,10 @@ import accounts from "./accounts";
 
 export const runtime = "edge";
 
-const app = new Hono().basePath("/api/v1");
-
-app.route("/accounts", accounts);
+const app = new Hono().basePath("/api/v1")
+const route = app.route("/accounts", accounts);
 
 export const GET = handle(app);
 export const POST = handle(app);
+
+export type AppType = typeof route;
