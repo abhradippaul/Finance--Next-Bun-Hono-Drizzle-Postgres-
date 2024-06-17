@@ -7,27 +7,41 @@ import { accounts, insertAccountSchema } from "@/db/Schema";
 const app = new Hono()
   .get("/", clerkMiddleware(), async (c) => {
     try {
-      const auth = getAuth(c);
-      if (!auth?.userId) {
-        return c.json(
-          {
-            error: "Unauthorized",
-          },
-          401
-        );
-      }
+      // const auth = getAuth(c);
+      // if (!auth?.userId) {
+      //   return c.json(
+      //     {
+      //       error: "Unauthorized",
+      //     },
+      //     401
+      //   );
+      // }
       // Database call
       const accounts = await db.query.accounts.findMany({
-        where: (accounts, { eq }) => eq(accounts.id, "1"),
+        // where: (accounts, { eq }) => eq(accounts.id, "1"),
         columns: {
           id: true,
           name: true,
         },
       });
 
-      return c.json({
-        accounts,
-      });
+      if (!accounts.length) {
+        return c.json(
+          {
+            error: "Account not found",
+          },
+          404
+        );
+      }
+
+      return c.json(
+        {
+          success: true,
+          message: "Account found successfully",
+          accounts,
+        },
+        202
+      );
     } catch (err) {
       console.log(err);
       return c.json({
@@ -56,11 +70,17 @@ const app = new Hono()
           401
         );
       }
-      const data = await db.insert(accounts).values({
+      await db.insert(accounts).values({
         userId: auth?.userId,
         name,
       });
-      return c.json({});
+      return c.json(
+        {
+          success: true,
+          message: "Account created successfully",
+        },
+        201
+      );
     }
   );
 
