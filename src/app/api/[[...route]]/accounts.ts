@@ -3,6 +3,7 @@ import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
 import { accounts, insertAccountSchema } from "@/db/Schema";
+import { v4 } from "uuid";
 
 const app = new Hono()
   .get("/", clerkMiddleware(), async (c) => {
@@ -25,7 +26,7 @@ const app = new Hono()
         },
       });
 
-      if (!accounts.length) {
+      if (!accounts?.length) {
         return c.json(
           {
             error: "Account not found",
@@ -73,6 +74,7 @@ const app = new Hono()
       await db.insert(accounts).values({
         userId: auth?.userId,
         name,
+        id: v4().toString(),
       });
       return c.json(
         {

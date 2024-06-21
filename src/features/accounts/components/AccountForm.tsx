@@ -1,11 +1,9 @@
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from "@/components/ui/form";
 import { insertAccountSchema } from "@/db/Schema";
 import { useForm } from "react-hook-form";
@@ -13,7 +11,8 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Trash } from "lucide-react";
+import { Loader2, Trash } from "lucide-react";
+import { UseCreateAccount } from "../api/UseCreateAccount";
 
 const formSchema = insertAccountSchema.pick({
   name: true,
@@ -28,20 +27,23 @@ interface Props {
   onDelete?: () => void;
   disabled?: boolean;
 }
-function AccountForm({
-  id,
-  defaultValue,
-  onSubmit,
-  onDelete,
-  disabled,
-}: Props) {
+function AccountForm({ id, defaultValue, onDelete }: Props) {
+  const { mutate, isPending } = UseCreateAccount();
+
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: defaultValue,
+    defaultValues: {
+      name: defaultValue?.name || "",
+    },
   });
+
   const handleSubmit = (values: FormValues) => {
-    onSubmit?.(values);
+    console.log(values);
+    mutate(values, {
+      onSuccess: () => form.reset(),
+    });
   };
+
   return (
     <Form {...form}>
       <form
@@ -56,28 +58,32 @@ function AccountForm({
               <FormLabel> Name </FormLabel>
               <FormControl>
                 <Input
-                  disabled={disabled}
+                  required
+                  disabled={isPending}
                   placeholder="Cash, Bank, Card"
                   {...field}
                 />
               </FormControl>
-              <FormDescription />
-              <FormMessage />
             </FormItem>
           )}
         />
-        <Button className="w-full" disabled={disabled}>
+        <Button className="w-full" disabled={isPending}>
+          {isPending && <Loader2 className="size-6 animate-spin mr-2" />}
           {id ? "Save Changes" : "Create account"}
         </Button>
         {id && (
           <Button
             type="button"
             onClick={onDelete}
-            className="w-full group"
-            disabled={disabled}
+            className="w-full text-red-500 hover:text-red-600"
+            disabled={isPending}
             variant="outline"
           >
-            <Trash className="size-4 mr-2 text-red-500 group-hover:text-red-600" />{" "}
+            {isPending ? (
+              <Loader2 className="size-6 animate-spin mr-2" />
+            ) : (
+              <Trash className="size-4 mr-2" />
+            )}
             Delete account
           </Button>
         )}
