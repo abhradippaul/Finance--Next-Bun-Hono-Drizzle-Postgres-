@@ -44,7 +44,7 @@ function AccountsPage() {
       <Card className="border-none drop-shadow-sm">
         <CardHeader className="gap-y-2 lg:flex-row lg:items-center lg:justify-between">
           <CardTitle>Accounts page</CardTitle>
-          <Button size="sm" onClick={() => dispatch(onOpen())}>
+          <Button size="sm" onClick={() => dispatch(onOpen(undefined))}>
             <Plus className="size-4 mr-2" />
             Add new
           </Button>

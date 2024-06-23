@@ -7,24 +7,31 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { onOpen } from "@/redux/slices/NewAccounts";
+import { onClose } from "@/redux/slices/NewAccounts";
+import { UseGetSpecificAccount } from "../api/UseGetSpecificAccount";
 
 const AccountForm = dynamic(() => import("./AccountForm"));
 
 function NewAccountSheet() {
-  const isOpen = useAppSelector(({ accountSheet: { isOpen } }) => isOpen);
+  const { isOpen, id: accountId } = useAppSelector(
+    ({ accountSheet }) => accountSheet
+  );
   const dispatch = useAppDispatch();
+  const { data, isLoading } = UseGetSpecificAccount(accountId);
   return (
-    <Sheet open={isOpen} onOpenChange={() => dispatch(onOpen())}>
-      {/* <SheetTrigger>Open</SheetTrigger> */}
+    <Sheet open={isOpen} onOpenChange={() => dispatch(onClose())}>
       <SheetContent className="overflow-y-auto w-full lg:max-w-md">
         <SheetHeader>
-          <SheetTitle>New Account</SheetTitle>
+          <SheetTitle>
+            {accountId ? "Update account" : "New Account"}
+          </SheetTitle>
           <SheetDescription>
-            Create a new account to tract transaction
+            {accountId
+              ? "Update account for transaction"
+              : "Create a new account to tract transaction"}
           </SheetDescription>
         </SheetHeader>
-        <AccountForm />
+        {!isLoading && <AccountForm defaultValue={data} id={data?.id} />}
       </SheetContent>
     </Sheet>
   );

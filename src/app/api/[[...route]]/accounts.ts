@@ -172,6 +172,44 @@ const app = new Hono()
 
       return c.json({ message: "Account Deleted successfully" }, 200);
     }
+  )
+  .patch(
+    "/",
+    clerkMiddleware(),
+    zValidator(
+      "json",
+      insertAccountSchema.pick({
+        name: true,
+        id: true,
+      })
+    ),
+    async (c) => {
+      const auth = getAuth(c);
+      const { name, id } = c.req.valid("json");
+      if (!auth?.userId) {
+        return c.json(
+          {
+            error: "Unauthorized",
+          },
+          401
+        );
+      }
+      console.log(name, id);
+      // const data = await db
+      //   .update(accounts)
+      //   .set({
+      //     name,
+      //   })
+      //   .where(and(eq(accounts.userId, auth?.userId), eq(accounts.id, id)));
+
+      // console.log(data);
+      return c.json(
+        {
+          message: "Account info updated successfully",
+        },
+        200
+      );
+    }
   );
 
 export default app;

@@ -1,0 +1,25 @@
+import { client } from "@/db/hono";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { InferRequestType, InferResponseType } from "hono";
+import { toast } from "sonner";
+
+type ResponseType = InferResponseType<typeof client.api.v1.accounts.$patch>;
+type RequestType = InferRequestType<
+  typeof client.api.v1.accounts.$patch
+>["json"];
+
+export const UseUpdateAccount = () => {
+  const queryClient = useQueryClient();
+  const mutation = useMutation<ResponseType, Error, RequestType>({
+    mutationFn: async (json) => {
+      const response = await client.api.v1.accounts.$patch({ json });
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      toast.success("Account updated successfully");
+    },
+    onError: () => toast.error("Failed to update account"),
+  });
+  return mutation;
+};

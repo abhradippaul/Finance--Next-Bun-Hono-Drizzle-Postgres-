@@ -12,12 +12,12 @@ export const newAccountsSlice = createSlice({
   } as InitialStateValue,
   name: "accountSheet",
   reducers: {
-    onOpen: (state) => ({
-      isOpen: !state.isOpen,
-      id: state.id,
+    onOpen: (state, action) => ({
+      isOpen: true,
+      id: action.payload,
     }),
     onClose: (state) => ({
-      isOpen: !state.isOpen,
+      isOpen: false,
       id: undefined,
     }),
   },
