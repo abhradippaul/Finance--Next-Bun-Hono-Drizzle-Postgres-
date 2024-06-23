@@ -10,6 +10,7 @@ import {
   getFilteredRowModel,
   getSortedRowModel,
   getPaginationRowModel,
+  Row,
 } from "@tanstack/react-table";
 
 import {
@@ -24,17 +25,22 @@ import { Button } from "./ui/button";
 import { useState } from "react";
 import { Input } from "./ui/input";
 import { Trash } from "lucide-react";
+import UseConfirm from "@/app/hooks/UseConfirm";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   filterKey: string;
+  onDelete: (rows: Row<TData>[]) => void;
+  disabled?: boolean;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   filterKey,
+  onDelete,
+  disabled = false,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -69,14 +75,26 @@ export function DataTable<TData, TValue>({
           className="max-w-sm"
         />
         {table.getFilteredSelectedRowModel().rows.length > 0 && (
-          <Button
-            size="sm"
-            variant="outline"
-            className="font-normal text-xs text-red-500 hover:text-red-600 ml-auto"
-          >
-            <Trash className="size-4 mr-2" /> Delete (
-            {table.getFilteredSelectedRowModel().rows.length})
-          </Button>
+          <UseConfirm
+            trigger={
+              <Button
+                size="sm"
+                variant="outline"
+                className="font-normal text-xs text-red-500 hover:text-red-600 ml-auto"
+                disabled={disabled}
+              >
+                <Trash className="size-4 mr-2" /> Delete (
+                {table.getFilteredSelectedRowModel().rows.length})
+              </Button>
+            }
+            title="Are you sure?"
+            description="You are about to perform a bluk delete."
+            disabled={disabled}
+            onClickConfirm={() => {
+              onDelete(table.getFilteredSelectedRowModel().rows);
+              table.resetRowSelection();
+            }}
+          />
         )}
       </div>
       <div className="rounded-md border">

@@ -1,12 +1,27 @@
 import { createSlice } from "@reduxjs/toolkit";
 
+interface InitialStateValue {
+  isOpen: boolean;
+  id?: string | undefined;
+}
+
 export const newAccountsSlice = createSlice({
-  initialState: false,
-  name: "isOpen",
+  initialState: {
+    isOpen: false,
+    id: undefined,
+  } as InitialStateValue,
+  name: "accountSheet",
   reducers: {
-    onChange: (state) => !state,
+    onOpen: (state) => ({
+      isOpen: !state.isOpen,
+      id: state.id,
+    }),
+    onClose: (state) => ({
+      isOpen: !state.isOpen,
+      id: undefined,
+    }),
   },
 });
 
-export const { onChange } = newAccountsSlice.actions;
+export const { onOpen, onClose } = newAccountsSlice.actions;
 export default newAccountsSlice.reducer;

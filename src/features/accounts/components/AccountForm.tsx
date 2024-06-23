@@ -13,6 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Trash } from "lucide-react";
 import { UseCreateAccount } from "../api/UseCreateAccount";
+import { useAppDispatch } from "@/app/hooks/ReduxHook";
+import { onClose } from "@/redux/slices/NewAccounts";
 
 const formSchema = insertAccountSchema.pick({
   name: true,
@@ -29,6 +31,7 @@ interface Props {
 }
 function AccountForm({ id, defaultValue, onDelete }: Props) {
   const { mutate, isPending } = UseCreateAccount();
+  const dispatch = useAppDispatch();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -40,7 +43,10 @@ function AccountForm({ id, defaultValue, onDelete }: Props) {
   const handleSubmit = (values: FormValues) => {
     console.log(values);
     mutate(values, {
-      onSuccess: () => form.reset(),
+      onSuccess: () => {
+        form.reset();
+        dispatch(onClose());
+      },
     });
   };
 

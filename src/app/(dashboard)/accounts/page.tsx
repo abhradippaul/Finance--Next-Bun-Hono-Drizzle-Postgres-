@@ -7,58 +7,59 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { UseCreateAccount } from "@/features/accounts/api/UseCreateAccount";
-import { Plus } from "lucide-react";
-import { Payment, columns } from "./columns";
+import { Loader2, Plus } from "lucide-react";
+import { columns } from "./columns";
 import { DataTable } from "@/components/DataTable";
-
-const data: Payment[] = [
-  {
-    id: "738ed52f",
-    amount: 100,
-    status: "pending",
-    email: "a@example.com",
-  },
-  {
-    id: "758ed52f",
-    amount: 200,
-    status: "pending",
-    email: "b@example.com",
-  },
-  {
-    id: "722ed52f",
-    amount: 300,
-    status: "pending",
-    email: "c@example.com",
-  },
-  {
-    id: "728ed42f",
-    amount: 300,
-    status: "pending",
-    email: "d@example.com",
-  },
-  {
-    id: "722ed52f",
-    amount: 200,
-    status: "pending",
-    email: "e@example.com",
-  },
-];
+import { UseGetAccounts } from "@/features/accounts/api/UseGetAccount";
+import { useAppDispatch } from "@/app/hooks/ReduxHook";
+import { Skeleton } from "@/components/ui/skeleton";
+import { UseBulkDeleteAccounts } from "@/features/accounts/api/UseDeleteAccount";
+import { onOpen } from "@/redux/slices/NewAccounts";
 
 function AccountsPage() {
-  const createAccount = UseCreateAccount();
+  const dispatch = useAppDispatch();
+  const accounts = UseGetAccounts();
+  const data = accounts.data || [];
+  const deleteAccounts = UseBulkDeleteAccounts();
+
+  if (accounts.isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto w-full pb-10 -mt-24">
+        <Card className="border-none drop-shadow-sm">
+          <CardHeader>
+            <Skeleton className="h-8 w-48" />
+          </CardHeader>
+          <CardContent>
+            <div className="h-[500px] w-full flex items-center justify-center">
+              <Loader2 className="size-6 text-slate-300 animate-spin" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto w-full pb-10 -mt-24">
       <Card className="border-none drop-shadow-sm">
         <CardHeader className="gap-y-2 lg:flex-row lg:items-center lg:justify-between">
           <CardTitle>Accounts page</CardTitle>
-          <Button size="sm">
+          <Button size="sm" onClick={() => dispatch(onOpen())}>
             <Plus className="size-4 mr-2" />
             Add new
           </Button>
         </CardHeader>
         <CardContent>
-          <DataTable columns={columns} data={data} filterKey="email" />
+          <DataTable
+            columns={columns}
+            data={data}
+            filterKey="name"
+            onDelete={(row) => {
+              const ids = row.map(({ original: { id } }) => id);
+              deleteAccounts.mutate({ ids });
+            }}
+            disabled={deleteAccounts.isPending || false}
+          />
         </CardContent>
         <CardFooter>
           <p>Card Footer</p>

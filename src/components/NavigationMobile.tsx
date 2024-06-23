@@ -22,12 +22,13 @@ function NavigationMobile({ routes, pathname }: Props) {
   };
 
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={() => setIsOpen((prev) => !prev)}>
       <SheetTrigger asChild>
         <Button
           variant="outline"
           size="sm"
           className="font-normal bg-white/10 hover:bg-white/20 hover:text-white border-none focus-visible:ring-offset-0 focus-visible:ring-transparent outline-none focus:bg-white/30 transition"
+          // onClick={() => setIsOpen(true)}
         >
           <Menu className="size-4" />
         </Button>

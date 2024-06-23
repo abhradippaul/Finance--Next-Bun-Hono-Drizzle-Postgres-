@@ -7,15 +7,15 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { onChange } from "@/redux/slices/NewAccounts";
+import { onOpen } from "@/redux/slices/NewAccounts";
 
 const AccountForm = dynamic(() => import("./AccountForm"));
 
 function NewAccountSheet() {
-  const isOpen = useAppSelector((state) => state.isOpen);
+  const isOpen = useAppSelector(({ accountSheet: { isOpen } }) => isOpen);
   const dispatch = useAppDispatch();
   return (
-    <Sheet open={isOpen} onOpenChange={() => dispatch(onChange())}>
+    <Sheet open={isOpen} onOpenChange={() => dispatch(onOpen())}>
       {/* <SheetTrigger>Open</SheetTrigger> */}
       <SheetContent className="overflow-y-auto w-full lg:max-w-md">
         <SheetHeader>

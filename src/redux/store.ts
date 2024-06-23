@@ -5,7 +5,7 @@ import newAccountsSlice from "./slices/NewAccounts";
 export const store = configureStore({
   reducer: {
     counter: counterSlice,
-    isOpen: newAccountsSlice,
+    accountSheet: newAccountsSlice,
   },
 });
 
