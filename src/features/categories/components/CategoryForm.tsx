@@ -5,21 +5,21 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import { insertAccountSchema } from "@/db/Schema";
+import { insertCategoriesSchema } from "@/db/Schema";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Trash } from "lucide-react";
-import { UseCreateAccount } from "../api/UseCreateAccount";
+import { UseCreateCategory } from "../api/UseCreateCategory";
 import { useAppDispatch } from "@/app/hooks/ReduxHook";
-import { onClose } from "@/redux/slices/NewAccounts";
-import { UseBulkDeleteAccounts } from "../api/UseDeleteAccount";
-import { UseUpdateAccount } from "../api/UseUpdateAccount";
+import { onClose } from "@/redux/slices/NewCategory";
+import { UseBulkDeleteCategories } from "../api/UseDeleteCategory";
+import { UseUpdateCategory } from "../api/UseUpdateCategory";
 import UseConfirm from "@/app/hooks/UseConfirm";
 
-const formSchema = insertAccountSchema.pick({
+const formSchema = insertCategoriesSchema.pick({
   name: true,
 });
 
@@ -30,10 +30,10 @@ interface Props {
   defaultValue?: FormValues;
   onSubmit?: (values: FormValues) => void;
 }
-function AccountForm({ id, defaultValue }: Props) {
-  const createAccount = UseCreateAccount();
-  const deleteAccount = UseBulkDeleteAccounts();
-  const updateAccount = UseUpdateAccount(id);
+function CategoryForm({ id, defaultValue }: Props) {
+  const createCategory = UseCreateCategory();
+  const deleteCategory = UseBulkDeleteCategories();
+  const updateCategory = UseUpdateCategory(id);
   const dispatch = useAppDispatch();
 
   const form = useForm<FormValues>({
@@ -45,7 +45,7 @@ function AccountForm({ id, defaultValue }: Props) {
 
   const handleSubmit = (values: FormValues) => {
     if (id) {
-      updateAccount.mutate(
+      updateCategory.mutate(
         { id, name: values.name },
         {
           onSuccess: () => {
@@ -55,7 +55,7 @@ function AccountForm({ id, defaultValue }: Props) {
         }
       );
     } else {
-      createAccount.mutate(values, {
+      createCategory.mutate(values, {
         onSuccess: () => {
           form.reset();
           dispatch(onClose());
@@ -66,7 +66,7 @@ function AccountForm({ id, defaultValue }: Props) {
 
   const onDelete = () => {
     if (id) {
-      deleteAccount.mutate(
+      deleteCategory.mutate(
         { ids: [id] },
         {
           onSuccess: () => {
@@ -92,39 +92,39 @@ function AccountForm({ id, defaultValue }: Props) {
               <FormControl>
                 <Input
                   required
-                  disabled={createAccount.isPending || deleteAccount.isPending}
-                  placeholder="Cash, Bank, Card"
+                  disabled={createCategory.isPending || deleteCategory.isPending}
+                  placeholder="Food, Travel etc..."
                   {...field}
                 />
               </FormControl>
             </FormItem>
           )}
         />
-        <Button className="w-full" disabled={createAccount.isPending}>
-          {(createAccount.isPending || updateAccount.isPending) && (
+        <Button className="w-full" disabled={createCategory.isPending}>
+          {(createCategory.isPending || updateCategory.isPending) && (
             <Loader2 className="size-6 animate-spin mr-2" />
           )}
-          {id ? "Save Changes" : "Create account"}
+          {id ? "Save Changes" : "Create category"}
         </Button>
         {id && (
           <UseConfirm
             title="Are you sure?"
-            description="You are about to delete this acount."
-            disabled={deleteAccount.isPending}
+            description="You are about to delete this transaction"
+            disabled={deleteCategory.isPending}
             onClickConfirm={onDelete}
             trigger={
               <Button
                 type="button"
                 className="w-full text-red-500 hover:text-red-600"
-                disabled={deleteAccount.isPending}
+                disabled={deleteCategory.isPending}
                 variant="outline"
               >
-                {deleteAccount.isPending ? (
+                {deleteCategory.isPending ? (
                   <Loader2 className="size-6 animate-spin mr-2" />
                 ) : (
                   <Trash className="size-4 mr-2" />
                 )}
-                Delete account
+                Delete categories
               </Button>
             }
           />
@@ -134,4 +134,4 @@ function AccountForm({ id, defaultValue }: Props) {
   );
 }
 
-export default AccountForm;
+export default CategoryForm;

@@ -16,7 +16,7 @@ interface Props {
   description: string;
   trigger: ReactNode;
   onClickConfirm: () => void;
-  disabled: boolean;
+  disabled?: boolean;
 }
 
 function UseConfirm({

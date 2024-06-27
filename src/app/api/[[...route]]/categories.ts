@@ -2,7 +2,7 @@ import { db } from "@/db/index";
 import { clerkMiddleware, getAuth } from "@hono/clerk-auth";
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { accounts, insertAccountSchema } from "@/db/Schema";
+import { categories, insertCategoriesSchema } from "@/db/Schema";
 import { v4 } from "uuid";
 import { z } from "zod";
 import { and, eq, inArray } from "drizzle-orm";
@@ -20,28 +20,19 @@ const app = new Hono()
         );
       }
       // Database call
-      const accounts = await db.query.accounts.findMany({
-        where: (accounts, { eq }) => eq(accounts.userId, auth.userId),
+      const categories = await db.query.categories.findMany({
+        where: (categories, { eq }) => eq(categories.userId, auth.userId),
         columns: {
           id: true,
           name: true,
         },
       });
 
-      if (!accounts?.length) {
-        return c.json(
-          {
-            error: "Account not found",
-          },
-          404
-        );
-      }
-
       return c.json(
         {
           success: true,
-          message: "Account found successfully",
-          accounts,
+          message: "Categories found successfully",
+          categories,
         },
         200
       );
@@ -70,9 +61,9 @@ const app = new Hono()
         );
       }
 
-      const data = await db.query.accounts.findFirst({
-        where: (accounts, { eq, and }) =>
-          and(eq(accounts.userId, auth.userId), eq(accounts.id, id)),
+      const data = await db.query.categories.findFirst({
+        where: (categories, { eq, and }) =>
+          and(eq(categories.userId, auth.userId), eq(categories.id, id)),
         columns: {
           id: true,
           name: true,
@@ -100,7 +91,7 @@ const app = new Hono()
     clerkMiddleware(),
     zValidator(
       "json",
-      insertAccountSchema.pick({
+      insertCategoriesSchema.pick({
         name: true,
       })
     ),
@@ -115,7 +106,7 @@ const app = new Hono()
           401
         );
       }
-      await db.insert(accounts).values({
+      await db.insert(categories).values({
         userId: auth?.userId,
         name,
         id: v4().toString(),
@@ -150,15 +141,15 @@ const app = new Hono()
         );
       }
       const data = await db
-        .delete(accounts)
+        .delete(categories)
         .where(
           and(
-            eq(accounts.userId, auth.userId),
-            inArray(accounts.id, values.ids)
+            eq(categories.userId, auth.userId),
+            inArray(categories.id, values.ids)
           )
         )
         .returning({
-          id: accounts.id,
+          id: categories.id,
         });
 
       if (!data.length) {
@@ -178,7 +169,7 @@ const app = new Hono()
     clerkMiddleware(),
     zValidator(
       "json",
-      insertAccountSchema.pick({
+      insertCategoriesSchema.pick({
         name: true,
         id: true,
       })
@@ -205,11 +196,11 @@ const app = new Hono()
       }
 
       const data = await db
-        .update(accounts)
+        .update(categories)
         .set({
           name,
         })
-        .where(and(eq(accounts.userId, auth?.userId), eq(accounts.id, id)));
+        .where(and(eq(categories.userId, auth?.userId), eq(categories.id, id)));
 
       if (!data) {
         return c.json(

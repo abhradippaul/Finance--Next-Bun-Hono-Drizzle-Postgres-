@@ -8,7 +8,7 @@ type RequestType = InferRequestType<
   typeof client.api.v1.accounts.$patch
 >["json"];
 
-export const UseUpdateAccount = () => {
+export const UseUpdateAccount = (id?: string) => {
   const queryClient = useQueryClient();
   const mutation = useMutation<ResponseType, Error, RequestType>({
     mutationFn: async (json) => {
@@ -16,10 +16,11 @@ export const UseUpdateAccount = () => {
       return await response.json();
     },
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["account", { id }] });
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
       toast.success("Account updated successfully");
     },
-    onError: () => toast.error("Failed to update account"),
+    onError: () => toast.error("Failed to edit account"),
   });
   return mutation;
 };

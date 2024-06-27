@@ -7,27 +7,29 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { onClose } from "@/redux/slices/NewAccounts";
-import { UseGetSpecificAccount } from "../api/UseGetSpecificAccount";
+import { onClose } from "@/redux/slices/NewCategory";
+import { UseGetSpecificCategory } from "../api/UseGetSpecificCategory";
 import { Loader2 } from "lucide-react";
 
-const AccountForm = dynamic(() => import("./AccountForm"));
+const CategoryForm = dynamic(() => import("./CategoryForm"));
 
-function NewAccountSheet() {
-  const { isOpen, id: accountId } = useAppSelector(
-    ({ accountSheet }) => accountSheet
+function NewCategorySheet() {
+  const { isOpen, id: categoryId } = useAppSelector(
+    ({ categorySheet }) => categorySheet
   );
   const dispatch = useAppDispatch();
-  const { data, isLoading } = UseGetSpecificAccount(accountId);
+  const { data, isLoading } = UseGetSpecificCategory(categoryId);
   return (
     <Sheet open={isOpen} onOpenChange={() => dispatch(onClose())}>
       <SheetContent className="overflow-y-auto w-full lg:max-w-md">
         <SheetHeader>
-          <SheetTitle>{accountId ? "Edit account" : "New Account"}</SheetTitle>
+          <SheetTitle>
+            {categoryId ? "Edit category" : "New category"}
+          </SheetTitle>
           <SheetDescription>
-            {accountId
-              ? "Edit an existing account"
-              : "Create a new account to tract transaction"}
+            {categoryId
+              ? "Edit an existing category"
+              : "Create a new category to organize your translations"}
           </SheetDescription>
         </SheetHeader>
         {isLoading ? (
@@ -35,11 +37,11 @@ function NewAccountSheet() {
             <Loader2 className="size-8 text-slate-300 animate-spin" />
           </div>
         ) : (
-          <AccountForm defaultValue={data} id={data?.id} />
+          <CategoryForm defaultValue={data} id={data?.id} />
         )}
       </SheetContent>
     </Sheet>
   );
 }
 
-export default NewAccountSheet;
+export default NewCategorySheet;

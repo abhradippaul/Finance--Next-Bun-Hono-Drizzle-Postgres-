@@ -7,8 +7,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { UseBulkDeleteAccounts } from "@/features/accounts/api/UseDeleteAccount";
-import { onOpen } from "@/redux/slices/NewAccounts";
+import { UseBulkDeleteCategories } from "@/features/categories/api/UseDeleteCategory";
+import { onOpen } from "@/redux/slices/NewCategory";
 import { Edit, MoreHorizontal, Trash } from "lucide-react";
 import { useState } from "react";
 
@@ -17,7 +17,7 @@ interface Props {
 }
 function Actions({ id }: Props) {
   const dispatch = useAppDispatch();
-  const deleteAccounts = UseBulkDeleteAccounts();
+  const deleteCategories = UseBulkDeleteCategories();
   const [isOpen, setIsOpen] = useState(false);
   return (
     <DropdownMenu open={isOpen} onOpenChange={() => setIsOpen(false)}>
@@ -44,8 +44,8 @@ function Actions({ id }: Props) {
         <DropdownMenuItem disabled={false} onClick={() => setIsOpen(false)}>
           <UseConfirm
             title="Are you sure?"
-            description="You are about to delete this transaction"
-            onClickConfirm={() => deleteAccounts.mutate({ ids: [id] })}
+            description="You are about to delete this category?"
+            onClickConfirm={() => deleteCategories.mutate({ ids: [id] })}
             trigger={
               <div className="size-full flex items-center text-red-500 hover:text-red-600">
                 <Trash className="size-4 mr-2" />

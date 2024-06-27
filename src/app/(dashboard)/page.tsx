@@ -8,7 +8,7 @@ export default function Home() {
   return (
     <div>
       <h1>Dashboard</h1>
-      <Button onClick={() => dispatch(onOpen())}>Test</Button>
+      <Button onClick={() => dispatch(onOpen(undefined))}>Test</Button>
     </div>
   );
 }
