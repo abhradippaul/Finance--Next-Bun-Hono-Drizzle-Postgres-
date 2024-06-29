@@ -5,7 +5,7 @@ import {
   FormItem,
   FormLabel,
 } from "@/components/ui/form";
-import { insertAccountSchema } from "@/db/Schema";
+import { insertAccountsSchema } from "@/db/Schema";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,7 +19,7 @@ import { UseBulkDeleteAccounts } from "../api/UseDeleteAccount";
 import { UseUpdateAccount } from "../api/UseUpdateAccount";
 import UseConfirm from "@/app/hooks/UseConfirm";
 
-const formSchema = insertAccountSchema.pick({
+const formSchema = insertAccountsSchema.pick({
   name: true,
 });
 

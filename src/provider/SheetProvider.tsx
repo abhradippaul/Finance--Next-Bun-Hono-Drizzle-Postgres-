@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useEffect, useState } from "react";
 
 const NewAccountSheet = dynamic(
   () => import("@/features/accounts/components/NewAccountSheet")
@@ -8,7 +9,9 @@ const NewAccountSheet = dynamic(
 const NewCategorySheet = dynamic(
   () => import("@/features/categories/components/NewCategorySheet")
 );
-import { useEffect, useState } from "react";
+const NewTransactionSheet = dynamic(
+  () => import("@/features/transactions/components/NewTransactionSheet")
+);
 
 function SheetProvider() {
   const [isMounted, setIsMounted] = useState(false);
@@ -22,6 +25,7 @@ function SheetProvider() {
     <div>
       <NewAccountSheet />
       <NewCategorySheet />
+      <NewTransactionSheet />
     </div>
   );
 }

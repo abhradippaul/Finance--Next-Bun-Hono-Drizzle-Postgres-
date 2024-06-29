@@ -11,19 +11,19 @@ import {
 import { Loader2, Plus } from "lucide-react";
 import { columns } from "./columns";
 import { DataTable } from "@/components/DataTable";
+import { UseGetTransactions } from "@/features/transactions/api/UseGetTransactions";
 import { useAppDispatch } from "@/app/hooks/ReduxHook";
 import { Skeleton } from "@/components/ui/skeleton";
-import { onOpen } from "@/redux/slices/NewCategory";
-import { UseBulkDeleteCategories } from "@/features/categories/api/UseDeleteCategory";
-import { UseGetCategories } from "@/features/categories/api/UseGetCategories";
+import { UseBulkDeleteTransactions } from "@/features/transactions/api/UseDeleteTransactions";
+import { onOpen } from "@/redux/slices/NewTransaction";
 
 function TransactionsPage() {
   const dispatch = useAppDispatch();
-  const categories = UseGetCategories();
-  const data = categories.data || [];
-  const deleteCategories = UseBulkDeleteCategories();
+  const transactions = UseGetTransactions();
+  const data = transactions.data || [];
+  const deleteTransactions = UseBulkDeleteTransactions();
 
-  if (categories.isLoading) {
+  if (transactions.isLoading) {
     return (
       <div className="max-w-7xl mx-auto w-full pb-10 -mt-24">
         <Card className="border-none drop-shadow-sm">
@@ -44,8 +44,13 @@ function TransactionsPage() {
     <div className="max-w-7xl mx-auto w-full pb-10 -mt-24">
       <Card className="border-none drop-shadow-sm">
         <CardHeader className="gap-y-2 lg:flex-row lg:items-center lg:justify-between">
-          <CardTitle>Categories page</CardTitle>
-          <Button size="sm" onClick={() => dispatch(onOpen(undefined))}>
+          <CardTitle>Transactions page</CardTitle>
+          <Button
+            size="sm"
+            onClick={() => 
+              dispatch(onOpen(undefined))
+            }
+          >
             <Plus className="size-4 mr-2" />
             Add new
           </Button>
@@ -57,9 +62,9 @@ function TransactionsPage() {
             filterKey="name"
             onDelete={(row) => {
               const ids = row.map(({ original: { id } }) => id);
-              deleteCategories.mutate({ ids });
+              deleteTransactions.mutate({ ids });
             }}
-            disabled={deleteCategories.isPending}
+            disabled={deleteTransactions.isPending || false}
           />
         </CardContent>
         <CardFooter>
