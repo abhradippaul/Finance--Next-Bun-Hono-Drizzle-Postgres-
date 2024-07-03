@@ -22,6 +22,7 @@ export const UseBulkDeleteAccounts = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
       toast.success("Accounts deleted");
     },
     onError: () => toast.error("Failed to delete accounts"),

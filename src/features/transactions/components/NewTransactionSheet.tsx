@@ -37,7 +37,19 @@ function NewTransactionSheet() {
             <Loader2 className="size-8 text-slate-300 animate-spin" />
           </div>
         ) : (
-          <TransactionForm defaultValue={data} id={data?.id} />
+          <TransactionForm
+            defaultValue={
+              data && {
+                accountId: data.accountId,
+                categoryId: data.categoryId || undefined,
+                amount: data.amount.toString(),
+                date: new Date(data.date) || new Date(),
+                payee: data.payee,
+                notes: data.notes || undefined,
+              }
+            }
+            id={data?.id}
+          />
         )}
       </SheetContent>
     </Sheet>

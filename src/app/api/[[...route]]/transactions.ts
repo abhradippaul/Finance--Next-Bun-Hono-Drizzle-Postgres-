@@ -10,7 +10,7 @@ import {
 } from "@/db/Schema";
 import { v4 } from "uuid";
 import { z } from "zod";
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, gte, inArray, lte } from "drizzle-orm";
 import { subDays, parse } from "date-fns";
 
 const app = new Hono()
@@ -44,42 +44,26 @@ const app = new Hono()
           : defaultFrom;
         const endDate = to ? parse(to, "yyyy-MM-dd", new Date()) : defaultTo;
         // Database call
+
         const data = await db.query.transactions.findMany({
-          where: (transactions, { eq, and, gte, lte }) =>
-            and(
-              accountId ? eq(transactions.accountId, accountId) : undefined,
-              eq(transactions.accountId, auth.userId),
-              gte(transactions.date, startDate),
-              lte(transactions.date, endDate)
-            ),
+          where: and(
+            accountId ? eq(transactions.accountId, accountId) : undefined,
+            gte(transactions.date, startDate),
+            lte(transactions.date, endDate)
+          ),
           orderBy: (transactions, { asc }) => [asc(transactions.date)],
           with: {
             categories: {
-              with: {
-                transactions: {
-                  where: (transactions, { eq }) =>
-                    eq(transactions.categoryId, categories.id),
-                },
+              columns: {
+                name: true,
               },
             },
             accounts: {
-              with: {
-                transactions: {
-                  where: (transactions, { eq }) =>
-                    eq(transactions.accountId, accounts.id),
-                },
+              columns: {
+                name: true,
               },
             },
           },
-          // columns: {
-          //   id: true,
-          //   amount: true,
-          //   payee: true,
-          //   notes: true,
-          //   date: true,
-          //   accountId: true,
-          //   categoryId: true,
-          // },
         });
 
         return c.json(
@@ -118,22 +102,10 @@ const app = new Hono()
 
       const data = await db.query.transactions.findFirst({
         where: (transactions, { eq, and }) =>
-          and(eq(accounts.userId, auth.userId), eq(transactions.id, id)),
-        with: {
-          accounts: {
-            with: {
-              transactions: {
-                where: (transactions, { eq }) =>
-                  eq(transactions.accountId, accounts.id),
-              },
-            },
-          },
-        },
-        // columns: {
-        //   id: true,
-        //   name: true,
-        //   userId: true,
-        // },
+          and(
+            // eq(accounts.userId, auth.userId),
+            eq(transactions.id, id)
+          ),
       });
 
       if (!data) {
@@ -173,12 +145,12 @@ const app = new Hono()
         );
       }
 
-      if (!accountId || !date || !amount || !categoryId || !notes || !payee) {
+      if (!accountId || !date || !amount || !payee) {
         return c.json(
           {
             error: "Missing required fields",
           },
-          400
+          401
         );
       }
 
@@ -189,6 +161,7 @@ const app = new Hono()
         payee,
         notes,
         accountId,
+        categoryId: categoryId || null,
       });
       return c.json(
         {
@@ -198,52 +171,52 @@ const app = new Hono()
         201
       );
     }
-  )
-  // .patch(
-  //   "/",
-  //   clerkMiddleware(),
-  //   zValidator(
-  //     "json",
-  //     insertTransactionsSchema.omit({
-  //       id: true,
-  //     })
-  //   ),
-  //   async (c) => {
-  //     const auth = getAuth(c);
-  //     const value = c.req.valid("json");
-  //     if (!auth?.userId) {
-  //       return c.json(
-  //         {
-  //           error: "Unauthorized",
-  //         },
-  //         401
-  //       );
-  //     }
-  
-  //     const data = await db
-  //       .update(categories)
-  //       .set({
-  //         name,
-  //       })
-  //       .where(and(eq(categories.userId, auth?.userId), eq(categories.id, id)));
-  
-  //     if (!data) {
-  //       return c.json(
-  //         {
-  //           error: "Account not found",
-  //         },
-  //         404
-  //       );
-  //     }
-  
-  //     return c.json(
-  //       {
-  //         message: "Account info updated successfully",
-  //       },
-  //       200
-  //     );
-  //   }
-  // );
+  );
+// .patch(
+//   "/",
+//   clerkMiddleware(),
+//   zValidator(
+//     "json",
+//     insertTransactionsSchema.omit({
+//       id: true,
+//     })
+//   ),
+//   async (c) => {
+//     const auth = getAuth(c);
+//     const value = c.req.valid("json");
+//     if (!auth?.userId) {
+//       return c.json(
+//         {
+//           error: "Unauthorized",
+//         },
+//         401
+//       );
+//     }
+
+//     const data = await db
+//       .update(categories)
+//       .set({
+//         name,
+//       })
+//       .where(and(eq(categories.userId, auth?.userId), eq(categories.id, id)));
+
+//     if (!data) {
+//       return c.json(
+//         {
+//           error: "Account not found",
+//         },
+//         404
+//       );
+//     }
+
+//     return c.json(
+//       {
+//         message: "Account info updated successfully",
+//       },
+//       200
+//     );
+//   }
+// );
 // .post(
 //   "/bulk-delete",
 //   clerkMiddleware(),
@@ -279,6 +252,5 @@ const app = new Hono()
 //     return c.json({ message: "Account Deleted successfully" }, 200);
 //   }
 // )
-
 
 export default app;

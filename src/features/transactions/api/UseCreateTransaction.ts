@@ -16,8 +16,10 @@ export const UseCreateTransaction = () => {
       // if (!response.ok) toast.error("Failed to create account");
       return await response.json();
     },
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["transactions"] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      toast.success("Transaction created successfully");
+    },
     onError: () => toast.error("Failed to create transaction"),
   });
   return mutation;

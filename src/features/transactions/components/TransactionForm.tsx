@@ -1,3 +1,5 @@
+import dynamic from "next/dynamic";
+
 import {
   Form,
   FormControl,
@@ -6,7 +8,7 @@ import {
   FormLabel,
 } from "@/components/ui/form";
 import { insertTransactionsSchema } from "@/db/Schema";
-import { useForm } from "react-hook-form";
+import { FieldError, useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
@@ -17,17 +19,31 @@ import { useAppDispatch } from "@/app/hooks/ReduxHook";
 import { onClose } from "@/redux/slices/NewTransaction";
 import { UseBulkDeleteTransactions } from "../api/UseDeleteTransactions";
 import { UseUpdateTransaction } from "../api/UseUpdateTransaction";
-import UseConfirm from "@/app/hooks/UseConfirm";
-import Select from "@/components/Select";
-import DatePicker from "@/components/DatePicker";
 import { UseGetAccounts } from "@/features/accounts/api/UseGetAccount";
 import { UseGetCategories } from "@/features/categories/api/UseGetCategories";
 import { UseCreateAccount } from "@/features/accounts/api/UseCreateAccount";
 import { UseCreateCategory } from "@/features/categories/api/UseCreateCategory";
 import { Textarea } from "@/components/ui/textarea";
+import FormFieldDatePicker from "./FormFieldDatePicker";
+import AmountInput from "@/components/AmountInput";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
-const formSchema = insertTransactionsSchema.omit({
-  id: true,
+const DatePicker = dynamic(() => import("@/components/DatePicker"));
+const Select = dynamic(() => import("@/components/Select"));
+const UseConfirm = dynamic(() => import("@/app/hooks/UseConfirm"));
+
+// const formSchema = insertTransactionsSchema.omit({
+//   id: true,
+// });
+
+const formSchema = z.object({
+  accountId: z.string().min(1, "Account id is required"),
+  amount: z.string(),
+  categoryId: z.string().optional(),
+  date: z.date(),
+  notes: z.string().optional(),
+  payee: z.string(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -51,7 +67,7 @@ function AccountForm({ id, defaultValue }: Props) {
     resolver: zodResolver(formSchema),
     defaultValues: {
       accountId: defaultValue?.accountId || "",
-      amount: defaultValue?.amount || 0,
+      amount: defaultValue?.amount || "",
       categoryId: defaultValue?.categoryId || "",
       date: defaultValue?.date,
       notes: defaultValue?.notes || "",
@@ -60,6 +76,7 @@ function AccountForm({ id, defaultValue }: Props) {
   });
 
   const handleSubmit = (values: FormValues) => {
+    console.log(values);
     if (id) {
       updateTransaction.mutate(
         { id, ...values },
@@ -71,12 +88,18 @@ function AccountForm({ id, defaultValue }: Props) {
         }
       );
     } else {
-      createTransaction.mutate(values, {
-        onSuccess: () => {
-          form.reset();
-          dispatch(onClose());
+      createTransaction.mutate(
+        {
+          ...values,
+          amount: parseFloat(values.amount) * 1000,
         },
-      });
+        {
+          onSuccess: () => {
+            form.reset();
+            dispatch(onClose());
+          },
+        }
+      );
     }
   };
 
@@ -93,29 +116,28 @@ function AccountForm({ id, defaultValue }: Props) {
     }
   };
 
+  // useEffect(() => {
+  //   const error = form.formState.errors;
+  //   const errorArr = Object.keys(error);
+  //   console.log(error);
+  //   for (let i = 0; i < errorArr.length; i++) {
+  //     const errorMessage = error[errorArr[i]].message;
+  //     if (errorMessage) {
+  //       toast.error(`${errorArr[i]} is required`);
+  //       break;
+  //     }
+  //   }
+  // }, [form.formState.errors]);
+
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
         className="space-y-4 pt-4"
       >
-        <FormField
+        <FormFieldDatePicker
           control={form.control}
-          name="date"
-          render={({ field }) => (
-            <FormItem>
-              {/* <FormLabel>  </FormLabel> */}
-              <FormControl>
-                <DatePicker
-                  disabled={
-                    createTransaction.isPending || deleteTransaction.isPending
-                  }
-                  onChange={field.onChange}
-                  value={field?.value}
-                />
-              </FormControl>
-            </FormItem>
-          )}
+          disabled={createTransaction.isPending || deleteTransaction.isPending}
         />
 
         <FormField
@@ -202,13 +224,34 @@ function AccountForm({ id, defaultValue }: Props) {
 
         <FormField
           control={form.control}
+          name="amount"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel> Amount </FormLabel>
+              <FormControl>
+                <AmountInput
+                  disabled={
+                    createTransaction.isPending ||
+                    deleteTransaction.isPending ||
+                    updateTransaction.isPending
+                  }
+                  // placeholder="0.00"
+                  value={field?.value}
+                  onChange={field.onChange}
+                  placeholder="0.00"
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
           name="notes"
           render={({ field }) => (
             <FormItem>
               <FormLabel> Notes </FormLabel>
               <FormControl>
                 <Textarea
-                  required
                   disabled={
                     createTransaction.isPending ||
                     deleteTransaction.isPending ||
