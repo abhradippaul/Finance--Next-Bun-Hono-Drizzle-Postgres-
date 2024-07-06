@@ -3,16 +3,23 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { InferRequestType, InferResponseType } from "hono";
 import { toast } from "sonner";
 
-type ResponseType = InferResponseType<typeof client.api.v1.transactions.$patch>;
+type ResponseType = InferResponseType<
+  (typeof client.api.v1.transactions)[":id"]["$patch"]
+>;
 type RequestType = InferRequestType<
-  typeof client.api.v1.transactions.$patch
+  (typeof client.api.v1.transactions)[":id"]["$patch"]
 >["json"];
 
 export const UseUpdateTransaction = (id?: string) => {
   const queryClient = useQueryClient();
   const mutation = useMutation<ResponseType, Error, RequestType>({
     mutationFn: async (json) => {
-      const response = await client.api.v1.transactions.$patch({ json });
+      const response = await client.api.v1.transactions[":id"]["$patch"]({
+        json,
+        param: {
+          id,
+        },
+      });
       return await response.json();
     },
     onSuccess: () => {

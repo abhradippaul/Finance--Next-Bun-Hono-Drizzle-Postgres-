@@ -42,7 +42,7 @@ function NewTransactionSheet() {
               data && {
                 accountId: data.accountId,
                 categoryId: data.categoryId || undefined,
-                amount: data.amount.toString(),
+                amount: String(data.amount / 1000),
                 date: new Date(data.date) || new Date(),
                 payee: data.payee,
                 notes: data.notes || undefined,

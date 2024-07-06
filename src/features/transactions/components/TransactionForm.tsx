@@ -1,17 +1,9 @@
 import dynamic from "next/dynamic";
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "@/components/ui/form";
-import { insertTransactionsSchema } from "@/db/Schema";
-import { FieldError, useForm } from "react-hook-form";
+import { Form } from "@/components/ui/form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Loader2, Trash } from "lucide-react";
 import { UseCreateTransaction } from "../api/UseCreateTransaction";
@@ -23,19 +15,14 @@ import { UseGetAccounts } from "@/features/accounts/api/UseGetAccount";
 import { UseGetCategories } from "@/features/categories/api/UseGetCategories";
 import { UseCreateAccount } from "@/features/accounts/api/UseCreateAccount";
 import { UseCreateCategory } from "@/features/categories/api/UseCreateCategory";
-import { Textarea } from "@/components/ui/textarea";
-import FormFieldDatePicker from "./FormFieldDatePicker";
-import AmountInput from "@/components/AmountInput";
-import { useEffect } from "react";
-import { toast } from "sonner";
 
-const DatePicker = dynamic(() => import("@/components/DatePicker"));
-const Select = dynamic(() => import("@/components/Select"));
 const UseConfirm = dynamic(() => import("@/app/hooks/UseConfirm"));
-
-// const formSchema = insertTransactionsSchema.omit({
-//   id: true,
-// });
+const FormFieldNotes = dynamic(() => import("./FormFieldNotes"));
+const FormFieldAmount = dynamic(() => import("./FormFieldAmount"));
+const FormFieldPayee = dynamic(() => import("./FormFieldPayee"));
+const FormFieldCategory = dynamic(() => import("./FormFieldCategory"));
+const FormFieldAccount = dynamic(() => import("./FormFieldAccount"));
+const FormFieldDatePicker = dynamic(() => import("./FormFieldDatePicker"));
 
 const formSchema = z.object({
   accountId: z.string().min(1, "Account id is required"),
@@ -76,10 +63,9 @@ function AccountForm({ id, defaultValue }: Props) {
   });
 
   const handleSubmit = (values: FormValues) => {
-    console.log(values);
     if (id) {
       updateTransaction.mutate(
-        { id, ...values },
+        { ...values, amount: parseFloat(values.amount) * 1000 },
         {
           onSuccess: () => {
             form.reset();
@@ -129,149 +115,50 @@ function AccountForm({ id, defaultValue }: Props) {
   //   }
   // }, [form.formState.errors]);
 
+  const isLoading =
+    createTransaction.isPending ||
+    deleteTransaction.isPending ||
+    updateTransaction.isPending ||
+    getAccounts.isPending ||
+    getCategories.isPending ||
+    createAccounts.isPending ||
+    createCategories.isPending;
+
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
         className="space-y-4 pt-4"
       >
-        <FormFieldDatePicker
+        <FormFieldDatePicker control={form.control} disabled={isLoading} />
+
+        <FormFieldAccount
+          options={getAccounts.data}
+          mutate={createAccounts.mutate}
           control={form.control}
-          disabled={createTransaction.isPending || deleteTransaction.isPending}
+          disabled={isLoading}
         />
 
-        <FormField
+        <FormFieldCategory
+          disabled={isLoading}
           control={form.control}
-          name="accountId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel> Account </FormLabel>
-              <FormControl>
-                <Select
-                  disabled={
-                    createTransaction.isPending ||
-                    deleteTransaction.isPending ||
-                    getAccounts.isLoading ||
-                    createAccounts.isPending
-                  }
-                  placeholder="Select an account"
-                  value={field.value}
-                  onChange={field.onChange}
-                  onCreate={(value) => {
-                    if (value) {
-                      createAccounts.mutate({ name: value });
-                    }
-                  }}
-                  options={getAccounts.data}
-                  type="account"
-                />
-              </FormControl>
-            </FormItem>
-          )}
+          mutate={createCategories.mutate}
+          options={getCategories.data}
         />
 
-        <FormField
-          control={form.control}
-          name="categoryId"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel> Category </FormLabel>
-              <FormControl>
-                <Select
-                  disabled={
-                    createTransaction.isPending ||
-                    deleteTransaction.isPending ||
-                    getCategories.isLoading ||
-                    createCategories.isPending
-                  }
-                  placeholder="Select a category"
-                  value={field.value}
-                  onChange={field.onChange}
-                  onCreate={(value) => {
-                    if (value) {
-                      createCategories.mutate({ name: value });
-                    }
-                  }}
-                  options={getCategories.data}
-                  type="category"
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
+        <FormFieldPayee control={form.control} disabled={isLoading} />
 
-        <FormField
-          control={form.control}
-          name="payee"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel> Payee </FormLabel>
-              <FormControl>
-                <Input
-                  required
-                  disabled={
-                    createTransaction.isPending ||
-                    deleteTransaction.isPending ||
-                    updateTransaction.isPending
-                  }
-                  placeholder="Add a payee"
-                  {...field}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
+        <FormFieldAmount control={form.control} disabled={isLoading} />
 
-        <FormField
-          control={form.control}
-          name="amount"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel> Amount </FormLabel>
-              <FormControl>
-                <AmountInput
-                  disabled={
-                    createTransaction.isPending ||
-                    deleteTransaction.isPending ||
-                    updateTransaction.isPending
-                  }
-                  // placeholder="0.00"
-                  value={field?.value}
-                  onChange={field.onChange}
-                  placeholder="0.00"
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel> Notes </FormLabel>
-              <FormControl>
-                <Textarea
-                  disabled={
-                    createTransaction.isPending ||
-                    deleteTransaction.isPending ||
-                    updateTransaction.isPending
-                  }
-                  placeholder="Optional notes"
-                  value={field?.value || ""}
-                  onChange={field.onChange}
-                />
-              </FormControl>
-            </FormItem>
-          )}
-        />
+        <FormFieldNotes control={form.control} disabled={isLoading} />
 
         <Button
           className="w-full"
           disabled={
             createTransaction.isPending ||
             getCategories.isLoading ||
-            getAccounts.isLoading
+            getAccounts.isLoading ||
+            updateTransaction.isPending
           }
         >
           {(createTransaction.isPending || updateTransaction.isPending) && (

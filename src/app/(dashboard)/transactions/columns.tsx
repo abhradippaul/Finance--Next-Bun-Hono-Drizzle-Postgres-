@@ -76,9 +76,26 @@ export const columns: ColumnDef<ResponseType>[] = [
         <CategoryColumn
           id={row.original.id}
           categoryId={row.original.categoryId}
-          categoryName={row.original?.categories?.name}
+          categoryName={row.original.category}
         />
       );
+    },
+  },
+  {
+    accessorKey: "payee",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Payee
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
+    cell: ({ row }) => {
+      return <span> {row.original.payee} </span>;
     },
   },
   {
@@ -123,7 +140,7 @@ export const columns: ColumnDef<ResponseType>[] = [
       return (
         <AccountColumn
           accountId={row.original.accountId}
-          accountName={row.original.accounts.name}
+          accountName={row.original.account}
         />
       );
     },
