@@ -18,9 +18,10 @@ import { UseBulkDeleteTransactions } from "@/features/transactions/api/UseDelete
 import { onOpen } from "@/redux/slices/NewTransaction";
 import UploadButton from "./UploadButton";
 import { useState } from "react";
+import ImportCard from "./ImportCard";
 
 enum VARIANTS {
-  LIST = "list",
+  LIST = "LIST",
   IMPORT = "IMPORT",
 }
 
@@ -31,7 +32,7 @@ const INITIAL_IMPORT_RESULTS = {
 };
 
 function TransactionsPage() {
-  const [variant, setVariant] = useState(VARIANTS.LIST);
+  const [variant, setVariant] = useState<VARIANTS>(VARIANTS.LIST);
   const [importResults, setImportResults] = useState(INITIAL_IMPORT_RESULTS);
 
   const dispatch = useAppDispatch();
@@ -40,11 +41,12 @@ function TransactionsPage() {
   const deleteTransactions = UseBulkDeleteTransactions();
 
   const onUpload = (results: typeof INITIAL_IMPORT_RESULTS) => {
+    console.log(results);
     setImportResults(results);
     setVariant(VARIANTS.IMPORT);
   };
 
-  const onCancel = () => {
+  const onCancelUpload = () => {
     setImportResults(INITIAL_IMPORT_RESULTS);
     setVariant(VARIANTS.LIST);
   };
@@ -67,7 +69,13 @@ function TransactionsPage() {
   }
 
   if (variant === VARIANTS.IMPORT) {
-    return <div>This is screen for import</div>;
+    return (
+      <ImportCard
+        data={importResults.data}
+        onCancel={onCancelUpload}
+        onSubmit={() => {}}
+      />
+    );
   }
 
   return (
@@ -75,8 +83,12 @@ function TransactionsPage() {
       <Card className="border-none drop-shadow-sm">
         <CardHeader className="gap-y-2 lg:flex-row lg:items-center lg:justify-between">
           <CardTitle>Transactions page</CardTitle>
-          <div className="flex items-center gap-x-2">
-            <Button size="sm" onClick={() => dispatch(onOpen(undefined))}>
+          <div className="flex flex-col lg:flex-row items-center gap-2">
+            <Button
+              size="sm"
+              onClick={() => dispatch(onOpen(undefined))}
+              className="w-full lg:w-auto"
+            >
               <Plus className="size-4 mr-2" />
               Add new
             </Button>

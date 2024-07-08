@@ -2,8 +2,14 @@ import { Button } from "@/components/ui/button";
 import { Upload } from "lucide-react";
 import { useCSVReader } from "react-papaparse";
 
+const INITIAL_IMPORT_RESULTS = {
+  data: [],
+  errors: [],
+  meta: {},
+};
+
 interface Props {
-  onUpload: (results:any) => void;
+  onUpload: (results: typeof INITIAL_IMPORT_RESULTS) => void;
 }
 
 function UploadButton({ onUpload }: Props) {
