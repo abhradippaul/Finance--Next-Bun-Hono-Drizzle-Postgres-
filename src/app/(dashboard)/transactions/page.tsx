@@ -1,13 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Plus } from "lucide-react";
 import { columns } from "./columns";
 import { DataTable } from "@/components/DataTable";
@@ -19,6 +13,10 @@ import { onOpen } from "@/redux/slices/NewTransaction";
 import UploadButton from "./UploadButton";
 import { useState } from "react";
 import ImportCard from "./ImportCard";
+import { transactions as transactionSchema } from "@/db/Schema";
+import UseSelectAccount from "@/features/accounts/components/UseSelectAccount";
+import { UseCreateTransaction } from "@/features/transactions/api/UseCreateTransaction";
+import { UseCreateBulkTransaction } from "@/features/transactions/api/UseCreateBulkTransaction";
 
 enum VARIANTS {
   LIST = "LIST",
@@ -32,16 +30,18 @@ const INITIAL_IMPORT_RESULTS = {
 };
 
 function TransactionsPage() {
+  const [accountId, setAccountId] = useState<string | undefined>("");
+  const [isOpen, setIsOpen] = useState<boolean>(false);
   const [variant, setVariant] = useState<VARIANTS>(VARIANTS.LIST);
   const [importResults, setImportResults] = useState(INITIAL_IMPORT_RESULTS);
 
   const dispatch = useAppDispatch();
   const transactions = UseGetTransactions();
+  const createTransaction = UseCreateBulkTransaction();
   const data = transactions.data || [];
   const deleteTransactions = UseBulkDeleteTransactions();
 
   const onUpload = (results: typeof INITIAL_IMPORT_RESULTS) => {
-    console.log(results);
     setImportResults(results);
     setVariant(VARIANTS.IMPORT);
   };
@@ -49,6 +49,24 @@ function TransactionsPage() {
   const onCancelUpload = () => {
     setImportResults(INITIAL_IMPORT_RESULTS);
     setVariant(VARIANTS.LIST);
+  };
+
+  const onSubmitImport = async (
+    value: (typeof transactionSchema.$inferInsert)[]
+  ) => {
+    if (accountId) {
+      const data = value.map((e) => ({
+        ...e,
+        accountId,
+      }));
+      createTransaction.mutate(data, {
+        onSuccess: () => {
+          onCancelUpload();
+        },
+      });
+    } else {
+      setIsOpen(true);
+    }
   };
 
   if (transactions.isLoading) {
@@ -70,11 +88,19 @@ function TransactionsPage() {
 
   if (variant === VARIANTS.IMPORT) {
     return (
-      <ImportCard
-        data={importResults.data}
-        onCancel={onCancelUpload}
-        onSubmit={() => {}}
-      />
+      <>
+        <UseSelectAccount
+          isOpen={isOpen}
+          setAccoutId={setAccountId}
+          setIsOpen={setIsOpen}
+          accountId={accountId}
+        />
+        <ImportCard
+          data={importResults.data}
+          onCancel={onCancelUpload}
+          onSubmit={onSubmitImport}
+        />
+      </>
     );
   }
 
@@ -107,9 +133,6 @@ function TransactionsPage() {
             disabled={deleteTransactions.isPending || false}
           />
         </CardContent>
-        <CardFooter>
-          <p>Card Footer</p>
-        </CardFooter>
       </Card>
     </div>
   );

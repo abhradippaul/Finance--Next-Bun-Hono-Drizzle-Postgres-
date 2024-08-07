@@ -35,11 +35,12 @@ function TableHeadSelect({ columnIndex, onChange, selectedColumns }: Props) {
           skip
         </SelectItem>
         {options.map((e, i) => {
+          const disabled = Object.values(selectedColumns).includes(e);
           return (
             <SelectItem
               value={e}
               key={e}
-              // disabled={columnIndex === i}
+              disabled={disabled}
               className="capitalize"
             >
               {e}

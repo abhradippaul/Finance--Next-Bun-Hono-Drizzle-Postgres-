@@ -21,7 +21,7 @@ interface Props {
   onChange: (value?: string) => void;
   onCreate?: (value: string) => void;
   options?: { id: string; name: string }[];
-  value: string | null | undefined;
+  value?: string | null | undefined;
   type: "account" | "category";
   placeholder?: string;
   disabled?: boolean;
